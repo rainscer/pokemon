@@ -1,26 +1,40 @@
 import { random } from './tools.js'
-const logsWrapper = document.querySelector('logs')
+//const logsWrapper = document.querySelector('logs')
 export class Pokemon {
+    namePL
     name
     isDead
     elHP
     elProgressbar
+    elImg
     defaultHP
     damageHP
 
-    constructor(name, elHP, elProgressbar) {
-        this.name = name
-        this.elHP = elHP
-        this.elProgressbar = elProgressbar
-        this.defaultHP = 100
-        this.damageHP = 100
+    constructor({ name, selector, hp, attacks = [], img}) {
+        this.namePL = document.querySelector(`#name-${selector}`)
+        this.name = name;
+        this.elHP = document.querySelector(`#health-${selector}`),
+        this.elProgressbar = document.querySelector(`#progressbar-${selector}`)
+        this.defaultHP = hp
+        this.damageHP = hp
         this.isDead = false
+        this.attacks = attacks
+
+        this.elProgressbar.classList.remove('critical', 'low')
+        const elImg = document.querySelector(`#img-${selector}`)
+        elImg.src = img        
+        this.renderHP()
     }
 
     
     renderHP() {
+        this.renderName();
         this.renderHPLife();
         this.renderProgressbarHP();
+    }
+
+    renderName(){
+        this.namePL.innerText = this.name;
     }
 
     renderHPLife() {
@@ -29,6 +43,14 @@ export class Pokemon {
 
     renderProgressbarHP() {
         this.elProgressbar.style.width = this.damageHP + '%';
+
+        const width = parseFloat(this.elProgressbar.style.width)
+
+        if (width < 20) {
+            this.elProgressbar.classList.add('critical')
+        } else if (width < 60) {
+            this.elProgressbar.classList.add('low')
+        }
     }
 
     generateLog({ name }, damaged) {
@@ -50,12 +72,9 @@ export class Pokemon {
 
     changeHP(count, enemy) {
         if (!this.isDead) {
-            if (this.damageHP <= count) {
+            if (this.damageHP < count) {
                 this.damageHP = 0;
-                setTimeout(()=> {
-                    logsWrapper.innerHTML = logsWrapper.innerHTML.concat(`${this.name} lose!`)
-                    logsWrapper.scrollTop = logsWrapper.scrollHeight;
-                },100)
+                alert(`${this.name} проиграл`);
                 this.isDead = true;
             } else {
                 this.damageHP -= count;
